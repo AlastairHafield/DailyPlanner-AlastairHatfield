@@ -1,15 +1,19 @@
-
+//Get time and date for banner and format 
 let now = dayjs();
 let nowTime = now.format(' HH:mm / MMMM D YYYY');
-
+//display time and date
 let dateTime = $('#currentDay');
 dateTime.text(nowTime);
-
+//definitions for colour change
 let past = true;
 let present = false;
-//To test colour change comment out now.format('hA') and add e.g ('11AM')
-//let hour = now.format('hA')
-let hour = ('1PM')
+//To test colour change comment out let hour = now.format('hA') and delete comment for  let hour = ('1PM') 
+//morning needs to be changed to AM
+let hour = now.format('hA');
+
+
+//let hour = ('1PM');
+console.log(hour);
 //Check for stored tasks
 let storedTasks = JSON.parse(localStorage.getItem('taskList'))
 //for first time use set up local storage structure
