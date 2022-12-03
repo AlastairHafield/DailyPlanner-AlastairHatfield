@@ -1,23 +1,90 @@
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
-$(function () {
-    // TODO: Add a listener for click events on the save button. This code should
-    // use the id in the containing time-block as a key to save the user input in
-    // local storage. HINT: What does `this` reference in the click listener
-    // function? How can DOM traversal be used to get the "hour-x" id of the
-    // time-block containing the button that was clicked? How might the id be
-    // useful when saving the description in local storage?
-    //
-    // TODO: Add code to apply the past, present, or future class to each time
-    // block by comparing the id to the current hour. HINTS: How can the id
-    // attribute of each time-block be used to conditionally add or remove the
-    // past, present, and future classes? How can Day.js be used to get the
-    // current hour in 24-hour time?
-    //
-    // TODO: Add code to get any user input that was saved in localStorage and set
-    // the values of the corresponding textarea elements. HINT: How can the id
-    // attribute of each time-block be used to do this?
-    //
-    // TODO: Add code to display the current date in the header of the page.
-  });
+
+let now = dayjs();
+let nowTime = now.format(' HH:mm / MMMM D YYYY');
+
+let dateTime = $('#currentDay');
+dateTime.text(nowTime);
+
+let past = true;
+let present = false;
+//To test colour change comment out now.format('hA') and add e.g ('11AM')
+//let hour = now.format('hA')
+let hour = ('1PM')
+//Check for stored tasks
+let storedTasks = JSON.parse(localStorage.getItem('taskList'))
+//for first time use set up local storage structure
+if (!storedTasks) {
+    storedTasks = {
+        0: "",
+        1: "",
+        2: "",
+        3: "",
+        4: "",
+        5: "",
+        6: "",
+        7: "",
+        8: "",
+        9: ""
+    }
+}
+
+
+// populate the planner block
+for (let i = 0; i < 9; i++) {
+
+    let loopHour = dayjs().hour(i + 9).format('hA')
+    //identify current hour
+    if (loopHour === hour) {
+        past = false;
+        present = true;
+    }
+    //add the entire row
+    let thisRow = $(`<div class="row">`)
+    $('.container').append(thisRow)
+    //add the hour number
+    let hourBlock = $(`<div class="col-1 hour" data-index="${i}">`)
+    hourBlock.text(`${loopHour}`);
+    thisRow.append(hourBlock)
+    //add the text area with stored tasks if any
+    let textSpace = $(`<textarea class="col-10 description" data-index="${i}">`)
+    textSpace.text(storedTasks[i])
+    //add past present future color based on hour
+    if (past) {
+        textSpace.addClass('past')
+    } else if (present) {
+        textSpace.addClass('present')
+        present = false;
+    } else {
+        textSpace.addClass('future')
+    }
+    thisRow.append(textSpace)
+    //add the save buttons depending on if the hour is already fille din
+    let btn = $(`<button class="col-1 btn saveBtn" data-index="${i}">`)
+    if (storedTasks[i].length) {
+        btn.append(`<i class="fas fa-lock" data-index="${i}">`)
+        textSpace.prop('disabled', true)
+    } else {
+        btn.append(`<i class="fas fa-unlock-alt" data-index="${i}">`)
+    }
+    thisRow.append(btn)
+}
+
+//listen to user mouse click
+$('.saveBtn').click(function () {
+    let index = $(this).attr('data-index');
+    //choose button effect and storage option based on if a stored task is unlocked or new task is locked in
+    if (storedTasks[index]) {
+        $(`textarea[data-index="${index}"]`).prop('disabled', false);
+        storedTasks[index] = "";
+        $(`i[data-index="${index}"]`).removeClass('fa-lock').addClass('fa-unlock-alt');
+        localStorage.setItem('taskList', JSON.stringify(storedTasks));
+    } else {
+        let txt = $(`textarea[data-index="${index}"]`)
+        if (txt.val()) { //handles the case that save is clicked on empty text area
+            storedTasks[index] = txt.val();
+            txt.prop('disabled', true);
+            $(`i[data-index="${index}"]`).removeClass('fa-unlock-alt').addClass('fa-lock');
+            localStorage.setItem('taskList', JSON.stringify(storedTasks));
+        }
+    }
+})
